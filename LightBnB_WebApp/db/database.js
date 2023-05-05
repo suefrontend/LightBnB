@@ -54,18 +54,12 @@ const getUserWithId = function (id) {
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser = function (user) {
-  // const userId = Object.keys(users).length + 1;
-  // user.id = userId;
-  // users[userId] = user;
-  // return Promise.resolve(user);
-  console.log("user", user);
   return pool
     .query(
       `INSERT INTO users (name, email, password)
       VALUES('${user.name}', '${user.email}', '${user.password}');`
     )
     .then((result) => {
-      console.log("result.rows", result);
       return result;
     })
     .catch((err) => {
@@ -75,13 +69,41 @@ const addUser = function (user) {
 
 /// Reservations
 
+// .query(
+//   `SELECT properties.title, properties.number_of_bedrooms, properties.number_of_bathrooms, properties.parking_spaces, properties.cost_per_night, reservations.start_date, reservations.end_date, avg(rating) as average_rating
+//   FROM reservations
+//   JOIN properties ON reservations.property_id = properties.id
+//   JOIN property_reviews ON properties.id = property_reviews.property_id
+//   JOIN users ON users.id = reservations.guest_id
+//   WHERE reservations.guest_id = ${guest_id}
+//   ORDER BY reservations.start_date
+//   LIMIT ${limit};`
+// )
+
 /**
  * Get all reservations for a single user.
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool
+    .query(
+      `SELECT properties.thumbnail_photo_url, properties.title, properties.number_of_bedrooms, properties.number_of_bathrooms, properties.parking_spaces, properties.cost_per_night, reservations.start_date, reservations.end_date, avg(rating) as average_rating
+      FROM reservations
+      JOIN properties ON reservations.property_id = properties.id
+      JOIN property_reviews ON properties.id = property_reviews.property_id
+      JOIN users ON users.id = reservations.guest_id
+      WHERE reservations.guest_id = '${guest_id}'
+      GROUP BY properties.id, reservations.id
+      ORDER BY reservations.start_date
+      LIMIT ${limit};`
+    )
+    .then((result) => {
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log("Error", err.message);
+    });
 };
 
 /// Properties
