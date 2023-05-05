@@ -7,6 +7,7 @@ const router = express.Router();
 // Create a new user
 router.post("/", (req, res) => {
   const user = req.body;
+  // console.log("user", user);
   user.password = bcrypt.hashSync(user.password, 12);
   database
     .addUser(user)
@@ -25,8 +26,10 @@ router.post("/", (req, res) => {
 router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  console.log("Password", password);
 
   database.getUserWithEmail(email).then((user) => {
+    console.log("user", user);
     if (!user) {
       return res.send({ error: "no user with that id" });
     }
